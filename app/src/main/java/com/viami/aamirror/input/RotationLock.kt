@@ -3,8 +3,10 @@ package com.viami.aamirror.input
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.provider.Settings
+import android.view.Display
 import android.view.View
 import android.view.WindowManager
 
@@ -54,11 +56,14 @@ object RotationLock {
         windowManager = null
     }
 
+    // createWindowContext requires a display-associated context: chain
+    // through createDisplayContext or it throws UnsupportedOperationException.
     private fun overlayContext(appContext: Context): Context =
         if (Build.VERSION.SDK_INT >= 30) {
-            appContext.createWindowContext(
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null,
-            )
+            val display = appContext.getSystemService(DisplayManager::class.java)
+                .getDisplay(Display.DEFAULT_DISPLAY)
+            appContext.createDisplayContext(display)
+                .createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null)
         } else {
             appContext
         }

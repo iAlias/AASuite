@@ -1,5 +1,6 @@
 package com.viami.aamirror.car
 
+import android.util.Log
 import androidx.car.app.AppManager
 import androidx.car.app.CarContext
 import androidx.car.app.CarToast
@@ -49,10 +50,12 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         }
 
         override fun onClick(x: Float, y: Float) {
+            Log.i(TAG, "surface onClick($x, $y)")
             handleTap(x, y)
         }
 
         override fun onScroll(distanceX: Float, distanceY: Float) {
+            Log.i(TAG, "surface onScroll($distanceX, $distanceY)")
             handleScroll(distanceX, distanceY)
         }
     }
@@ -113,8 +116,14 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         if (!MirrorGateway.state.value.isMirroring) return
         val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
         val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
-        val point = TouchMapper.mapTap(carX, carY, content, phoneWidth, phoneHeight) ?: return
-        requireAccessibility { MirrorAccessibilityService.tap(point.x, point.y) }
+        val point = TouchMapper.mapTap(carX, carY, content, phoneWidth, phoneHeight)
+        Log.i(TAG, "tap car=($carX, $carY) content=$content phone=${phoneWidth}x$phoneHeight -> $point")
+        if (point == null) return
+        requireAccessibility {
+            val sent = MirrorAccessibilityService.tap(point.x, point.y)
+            Log.i(TAG, "dispatchGesture tap sent=$sent")
+            sent
+        }
     }
 
     private fun handleScroll(distanceX: Float, distanceY: Float) {
@@ -162,6 +171,10 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
                 CarToast.LENGTH_LONG,
             ).show()
         }
+    }
+
+    private companion object {
+        const val TAG = "MirrorScreen"
     }
 
     private fun action(iconRes: Int, onClick: () -> Unit): Action =
