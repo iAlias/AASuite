@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Keep the motif inside the 66dp adaptive-icon safe zone. -->
+    <group
+        android:scaleX="0.92"
+        android:scaleY="0.92"
+        android:pivotX="54"
+        android:pivotY="54">
+        <path
+            android:pathData="M32,36 H76 Q84,36 84,44 V64 Q84,72 76,72 H32 Q24,72 24,64 V44 Q24,36 32,36 Z"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="5"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M35,45 H41 Q44,45 44,48 V60 Q44,63 41,63 H35 Q32,63 32,60 V48 Q32,45 35,45 Z"
+            android:fillColor="#4DD0E1" />
+        <path
+            android:pathData="M56,62 A8,8 0 0 0 48,54"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M61,62 A13,13 0 0 0 48,49"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M46.5,62 a1.5,1.5 0 1 0 3,0 a1.5,1.5 0 1 0 -3,0 Z"
+            android:fillColor="#FFFFFF" />
+    </group>
+</vector>
