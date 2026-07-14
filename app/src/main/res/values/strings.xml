@@ -16,6 +16,9 @@
     <string name="car_status_error">Permesso negato: apri l\'app sul telefono e riprova</string>
     <string name="car_confirm_on_phone">Conferma la cattura schermo sul telefono</string>
     <string name="car_accessibility_missing">Attiva il servizio Accessibility nelle impostazioni del telefono</string>
+    <string name="car_rotation_locked">Bloccato in orizzontale</string>
+    <string name="car_rotation_unlocked">Rotazione normale</string>
+    <string name="car_overlay_missing">Concedi "Mostra sopra altre app" nell\'app AA Mirror sul telefono</string>
 
     <!-- Activity di setup -->
     <string name="status_idle">Non attivo. Autorizza la cattura schermo, poi apri AA Mirror sull\'auto.</string>
@@ -25,6 +28,9 @@
     <string name="accessibility_on">Servizio Accessibility: attivo ✓</string>
     <string name="accessibility_off">Servizio Accessibility: non attivo</string>
     <string name="btn_accessibility">Apri impostazioni Accessibility</string>
+    <string name="overlay_on">Mostra sopra altre app: concesso ✓</string>
+    <string name="overlay_off">Mostra sopra altre app: non concesso (serve per il blocco orizzontale)</string>
+    <string name="btn_overlay">Concedi "Mostra sopra altre app"</string>
     <string name="btn_capture">Autorizza cattura schermo</string>
     <string name="accessibility_description">Consente ad AA Mirror di inviare Indietro e Home dal display dell\'auto</string>
     <string name="setup_instructions">Setup Android Auto (una tantum):\n1. App Android Auto → Impostazioni → tocca 10 volte "Versione" per attivare la modalità sviluppatore\n2. Menu ⋮ → Impostazioni sviluppatore → attiva "Fonti sconosciute"\n3. Impostazioni → Personalizza launcher → attiva AA Mirror</string>

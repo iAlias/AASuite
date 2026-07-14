@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -19,6 +20,7 @@ import com.viami.aamirror.core.MirrorGateway
 import com.viami.aamirror.core.MirrorState
 import com.viami.aamirror.core.ProjectionStatus
 import com.viami.aamirror.input.MirrorAccessibilityService
+import com.viami.aamirror.input.RotationLock
 import com.viami.aamirror.mirror.MirrorService
 import kotlinx.coroutines.launch
 
@@ -48,6 +50,14 @@ class SetupActivity : ComponentActivity() {
         findViewById<Button>(R.id.btn_capture).setOnClickListener { requestCapture() }
         findViewById<Button>(R.id.btn_accessibility).setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+        findViewById<Button>(R.id.btn_overlay).setOnClickListener {
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName"),
+                )
+            )
         }
 
         lifecycleScope.launch {
@@ -87,6 +97,12 @@ class SetupActivity : ComponentActivity() {
                 getString(R.string.accessibility_on)
             } else {
                 getString(R.string.accessibility_off)
+            }
+        findViewById<TextView>(R.id.txt_overlay).text =
+            if (RotationLock.canLock(this)) {
+                getString(R.string.overlay_on)
+            } else {
+                getString(R.string.overlay_off)
             }
     }
 

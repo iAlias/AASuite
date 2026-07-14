@@ -22,6 +22,7 @@ import com.viami.aamirror.core.ProjectionStatus
 import com.viami.aamirror.core.TouchMapper
 import com.viami.aamirror.input.MirrorAccessibilityService
 import com.viami.aamirror.input.PhoneKeys
+import com.viami.aamirror.input.RotationLock
 import com.viami.aamirror.mirror.PhoneDisplay
 import com.viami.aamirror.mirror.SurfaceTarget
 import com.viami.aamirror.setup.StartRequests
@@ -76,6 +77,7 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
             .addAction(action(R.drawable.ic_home) {
                 requireAccessibility { MirrorAccessibilityService.pressHome() }
             })
+            .addAction(action(R.drawable.ic_rotate) { toggleRotationLock() })
             .build()
         return NavigationTemplate.Builder().setActionStrip(strip).build()
     }
@@ -131,6 +133,25 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         requireAccessibility {
             MirrorAccessibilityService.swipe(startX, startY, endX, endY, durationMs = 100)
         }
+    }
+
+    private fun toggleRotationLock() {
+        if (!RotationLock.canLock(carContext)) {
+            CarToast.makeText(
+                carContext,
+                carContext.getString(R.string.car_overlay_missing),
+                CarToast.LENGTH_LONG,
+            ).show()
+            return
+        }
+        val locked = RotationLock.toggle(carContext)
+        CarToast.makeText(
+            carContext,
+            carContext.getString(
+                if (locked) R.string.car_rotation_locked else R.string.car_rotation_unlocked
+            ),
+            CarToast.LENGTH_LONG,
+        ).show()
     }
 
     private fun requireAccessibility(send: () -> Boolean) {
