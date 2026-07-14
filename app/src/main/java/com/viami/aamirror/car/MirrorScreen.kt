@@ -16,10 +16,13 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.viami.aamirror.R
+import com.viami.aamirror.core.AspectFit
 import com.viami.aamirror.core.MirrorGateway
 import com.viami.aamirror.core.ProjectionStatus
+import com.viami.aamirror.core.TouchMapper
 import com.viami.aamirror.input.MirrorAccessibilityService
 import com.viami.aamirror.input.PhoneKeys
+import com.viami.aamirror.mirror.PhoneDisplay
 import com.viami.aamirror.mirror.SurfaceTarget
 import com.viami.aamirror.setup.StartRequests
 import kotlinx.coroutines.launch
@@ -42,6 +45,14 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         override fun onSurfaceDestroyed(container: SurfaceContainer) {
             surfaceContainer = null
             MirrorGateway.detachSurface()
+        }
+
+        override fun onClick(x: Float, y: Float) {
+            handleTap(x, y)
+        }
+
+        override fun onScroll(distanceX: Float, distanceY: Float) {
+            handleScroll(distanceX, distanceY)
         }
     }
 
@@ -93,6 +104,33 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
                 carContext.getString(R.string.car_status_idle)
         }
         StatusRenderer.draw(container, message)
+    }
+
+    private fun handleTap(carX: Float, carY: Float) {
+        val container = surfaceContainer ?: return
+        if (!MirrorGateway.state.value.isMirroring) return
+        val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
+        val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
+        val point = TouchMapper.mapTap(carX, carY, content, phoneWidth, phoneHeight) ?: return
+        requireAccessibility { MirrorAccessibilityService.tap(point.x, point.y) }
+    }
+
+    private fun handleScroll(distanceX: Float, distanceY: Float) {
+        val container = surfaceContainer ?: return
+        if (!MirrorGateway.state.value.isMirroring) return
+        val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
+        val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
+        // Scale car-surface distances up to phone pixels, then swipe as a
+        // finger would move: end = start - distance, anchored at screen center.
+        val scaleX = phoneWidth.toFloat() / content.width
+        val scaleY = phoneHeight.toFloat() / content.height
+        val startX = phoneWidth / 2f
+        val startY = phoneHeight / 2f
+        val endX = (startX - distanceX * scaleX).coerceIn(1f, phoneWidth - 1f)
+        val endY = (startY - distanceY * scaleY).coerceIn(1f, phoneHeight - 1f)
+        requireAccessibility {
+            MirrorAccessibilityService.swipe(startX, startY, endX, endY, durationMs = 100)
+        }
     }
 
     private fun requireAccessibility(send: () -> Boolean) {
