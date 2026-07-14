@@ -1658,6 +1658,58 @@ git commit -m "docs: install, usage and DHU testing guide"
 
 ---
 
+## Addendum 2026-07-14 — Touch + blocco landscape (Task 10–13)
+
+Approvato dopo il collaudo DHU della v0.1 (vedi addendum nella spec). Eseguiti
+inline nella stessa sessione, stesso branch `feature/screen-mirror`.
+
+### Task 10: TouchMapper (pure, TDD)
+
+- Create: `core/TouchMapper.kt` — `data class PhonePoint(val x: Float, val y: Float)`;
+  `TouchMapper.mapTap(carX: Float, carY: Float, content: FitRect, phoneWidth: Int, phoneHeight: Int): PhonePoint?`
+  (null sulle bande nere; mapping lineare dentro il content rect).
+- Test: `core/TouchMapperTest.kt` — centro→centro, angolo→angolo, banda→null.
+- Verify: `.\gradlew.bat testDebugUnitTest` → verde. Commit.
+
+### Task 11: Gesti Accessibility
+
+- Modify: `input/MirrorAccessibilityService.kt` — aggiunge
+  `tap(x: Float, y: Float): Boolean` e
+  `swipe(startX: Float, startY: Float, endX: Float, endY: Float, durationMs: Long): Boolean`
+  via `dispatchGesture`.
+- Modify: `res/xml/accessibility_service_config.xml` — `android:canPerformGestures="true"`.
+- Verify: build. Commit.
+
+### Task 12: Cablaggio touch nel MirrorScreen
+
+- Create: `mirror/PhoneDisplay.kt` — `currentSize(context): Pair<Int, Int>`
+  (dimensioni logiche correnti: physicalWidth/Height del Display.Mode, scambiate
+  se rotation è 90/270).
+- Modify: `car/MirrorScreen.kt` — `onClick` → TouchMapper → tap;
+  `onScroll` → swipe ancorato al centro (end = start − distanza, scalata
+  content→telefono, clampata ai bordi). Ignora tutto se non in mirroring.
+- Verify: build + test. Commit.
+
+### Task 13: RotationLock + toggle + setup
+
+- Create: `input/RotationLock.kt` — overlay 0×0 `TYPE_APPLICATION_OVERLAY` con
+  `screenOrientation = SENSOR_LANDSCAPE`; `isLocked`, `canLock(context)`,
+  `lock(context)`, `unlock()`, `toggle(context): Boolean`.
+- Create: `res/drawable/ic_rotate.xml` (screen_rotation material).
+- Modify: manifest (`SYSTEM_ALERT_WINDOW`), strings (toast + setup overlay),
+  `car/MirrorScreen.kt` (4ª azione toggle con CarToast),
+  `setup/SetupActivity.kt` + `res/layout/activity_setup.xml` (stato + bottone
+  "Mostra sopra altre app" → `ACTION_MANAGE_OVERLAY_PERMISSION`).
+- Verify: build + test. Commit.
+
+### Task 14: Reinstallazione e ricollaudo DHU
+
+- `.\gradlew.bat installDebug` sul telefono collegato; riattivare il servizio
+  Accessibility se Android lo ha disattivato dopo l'aggiornamento.
+- Checklist: tap su icone/app nel DHU col mouse, scroll di una lista, tap sulle
+  bande nere (nessun effetto), toggle 🔄 con e senza permesso overlay,
+  pulsanti esistenti ancora funzionanti.
+
 ## Self-Review Notes
 
 - **Spec coverage:** navigation category + Surface (Task 8), MediaProjection/VirtualDisplay aspect-fit (Tasks 4–5), three buttons (Tasks 6, 8), setup activity + guided steps (Task 7), never-black status frames (Task 8), foreground service + notification (Task 5), permission-denied/reconnect handling (Tasks 5, 7, 8), unit tests for pure parts (Tasks 2–3), DHU + car checklist (Task 9), phase-2 seam documented (`FrameSource`, Task 4). Rotation is handled by the system compositor instead of recreating the VirtualDisplay — deviation from the spec's letter, forced by Android 14's single-`createVirtualDisplay` rule; the spec's observable behavior (brief flicker, correct reflow) is unchanged.

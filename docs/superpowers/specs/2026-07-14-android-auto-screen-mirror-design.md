@@ -118,6 +118,35 @@ navigazione.
 - **Collaudo finale sulla Qashqai** con checklist: avvio, permesso, rotazione,
   pulsanti, riconnessione dopo scollegamento cavo.
 
+## Addendum 2026-07-14 — Touch dal display auto + blocco landscape
+
+Approvato dopo il collaudo DHU della v0.1. Due funzionalità aggiuntive:
+
+### Touch dal display auto (tap + scroll)
+
+- `SurfaceCallback.onClick(x, y)` fornisce i tap sul display auto;
+  `onScroll(distanceX, distanceY)` fornisce lo scorrimento (solo distanze).
+- Un `TouchMapper` puro (testato) converte le coordinate auto → telefono
+  invertendo l'aspect-fit; i tap sulle bande nere vengono ignorati. La
+  dimensione corrente dello schermo telefono tiene conto della rotazione.
+- I gesti reali sul telefono vengono eseguiti dal servizio Accessibility con
+  `dispatchGesture` (tap ~50 ms; scroll = swipe ancorato al centro dello
+  schermo). Richiede `android:canPerformGestures="true"` — dopo
+  l'aggiornamento può essere necessario riattivare il servizio.
+- Niente multi-touch/pinch né drag lunghi (limite di Android Auto; scelta
+  esplicita dell'utente: tap + scroll bastano).
+- I 3 pulsanti esistenti restano come scorciatoie.
+
+### Blocco orientamento landscape
+
+- Quarto pulsante (toggle) nella barra azioni: forza l'intero telefono in
+  `SENSOR_LANDSCAPE` tramite una finestra overlay invisibile 0×0
+  (tecnica "Rotation Control"); vale anche per app bloccate in verticale.
+- Richiede il permesso "Mostra sopra altre app" (`SYSTEM_ALERT_WINDOW`),
+  con passo dedicato nell'activity di setup; se manca, il toggle mostra un
+  messaggio sul display auto.
+- Feedback: CarToast "Bloccato in orizzontale" / "Rotazione normale".
+
 ## Estensioni future (fuori scope per questa spec)
 
 - **Fase 2 — secondo telefono via WiFi:** il telefono B cattura il suo schermo,
