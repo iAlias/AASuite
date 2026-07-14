@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AA Mirror</string>
+
+    <!-- Notifiche -->
+    <string name="notification_channel">Mirroring attivo</string>
+    <string name="notification_mirroring">Mirroring dello schermo in corso</string>
+    <string name="notification_stop">Interrompi</string>
+    <string name="notification_channel_start">Richiesta di avvio</string>
+    <string name="start_request_title">AA Mirror</string>
+    <string name="start_request_text">Tocca per autorizzare la condivisione dello schermo</string>
+
+    <!-- Display auto -->
+    <string name="car_status_idle">Apri AA Mirror sul telefono e autorizza la cattura</string>
+    <string name="car_status_confirm">Conferma sul telefono</string>
+    <string name="car_status_error">Permesso negato: apri l\'app sul telefono e riprova</string>
+    <string name="car_confirm_on_phone">Conferma la cattura schermo sul telefono</string>
+    <string name="car_accessibility_missing">Attiva il servizio Accessibility nelle impostazioni del telefono</string>
+
+    <!-- Activity di setup -->
+    <string name="status_idle">Non attivo. Autorizza la cattura schermo, poi apri AA Mirror sull\'auto.</string>
+    <string name="status_waiting">In attesa della conferma…</string>
+    <string name="status_ready">Pronto: apri AA Mirror sul display dell\'auto</string>
+    <string name="status_mirroring">Mirroring attivo sul display dell\'auto</string>
+    <string name="accessibility_on">Servizio Accessibility: attivo ✓</string>
+    <string name="accessibility_off">Servizio Accessibility: non attivo</string>
+    <string name="btn_accessibility">Apri impostazioni Accessibility</string>
+    <string name="btn_capture">Autorizza cattura schermo</string>
+    <string name="accessibility_description">Consente ad AA Mirror di inviare Indietro e Home dal display dell\'auto</string>
+    <string name="setup_instructions">Setup Android Auto (una tantum):\n1. App Android Auto → Impostazioni → tocca 10 volte "Versione" per attivare la modalità sviluppatore\n2. Menu ⋮ → Impostazioni sviluppatore → attiva "Fonti sconosciute"\n3. Impostazioni → Personalizza launcher → attiva AA Mirror</string>
+</resources>
