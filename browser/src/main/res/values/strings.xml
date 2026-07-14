@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AA Browser</string>
+    <string name="search_hint">URL o ricerca Google</string>
+    <string name="phone_instructions">AA Browser non ha interfaccia sul telefono.\n\nCollega il telefono all\'auto (o al DHU) e apri AA Browser dal launcher di Android Auto: la pagina web viene mostrata sul display dell\'auto.\n\nComandi sul display: indietro, home, ricarica e ricerca (tastiera dell\'auto, disponibile a veicolo fermo). Tocco e scorrimento agiscono direttamente sulla pagina.\n\nApp sperimentale per uso personale. Usala solo a veicolo fermo e nel rispetto del codice della strada.</string>
+</resources>
