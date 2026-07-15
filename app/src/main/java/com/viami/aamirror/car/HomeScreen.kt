@@ -43,6 +43,11 @@ class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleO
                     screenManager.push(BookmarksScreen(carContext))
                 }
             )
+            .addItem(
+                row(R.string.menu_youtube, R.drawable.ic_cast) {
+                    screenManager.push(YouTubeScreen(carContext))
+                }
+            )
             .addItem(rotationRow())
             .addItem(fillRow())
             .build()
