@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "AndroidAutoMirror"
 include(":app")
+include(":companion")
