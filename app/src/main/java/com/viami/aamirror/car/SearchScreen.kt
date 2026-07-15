@@ -1,4 +1,4 @@
-package com.viami.aabrowser.car
+package com.viami.aamirror.car
 
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
@@ -6,7 +6,7 @@ import androidx.car.app.model.Action
 import androidx.car.app.model.ItemList
 import androidx.car.app.model.SearchTemplate
 import androidx.car.app.model.Template
-import com.viami.aabrowser.R
+import com.viami.aamirror.R
 
 /** Car-native keyboard input for a URL or a search query. */
 class SearchScreen(

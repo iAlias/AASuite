@@ -1,4 +1,4 @@
-package com.viami.aabrowser.core
+package com.viami.aamirror.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

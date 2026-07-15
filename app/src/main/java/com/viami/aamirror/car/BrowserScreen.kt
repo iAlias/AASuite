@@ -1,9 +1,7 @@
-package com.viami.aabrowser.car
+package com.viami.aamirror.car
 
-import androidx.car.app.AppManager
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
-import androidx.car.app.SurfaceCallback
 import androidx.car.app.SurfaceContainer
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
@@ -13,25 +11,25 @@ import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.viami.aabrowser.R
-import com.viami.aabrowser.browser.BrowserDisplay
-import com.viami.aabrowser.core.UrlResolver
+import com.viami.aamirror.R
+import com.viami.aamirror.browser.BrowserDisplay
+import com.viami.aamirror.core.UrlResolver
 
 class BrowserScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleObserver {
 
-    private val surfaceCallback = object : SurfaceCallback {
-        override fun onSurfaceAvailable(container: SurfaceContainer) {
+    private val sink = object : SurfaceSink {
+        override fun onAttach(container: SurfaceContainer) {
             val surface = container.surface ?: return
             BrowserDisplay.attach(
                 carContext, surface, container.width, container.height, container.dpi
             )
         }
 
-        override fun onSurfaceDestroyed(container: SurfaceContainer) {
+        override fun onDetach() {
             BrowserDisplay.detach()
         }
 
-        override fun onClick(x: Float, y: Float) {
+        override fun onTap(x: Float, y: Float) {
             BrowserDisplay.tap(x, y)
         }
 
@@ -44,14 +42,14 @@ class BrowserScreen(carContext: CarContext) : Screen(carContext), DefaultLifecyc
         lifecycle.addObserver(this)
     }
 
-    override fun onCreate(owner: LifecycleOwner) {
-        carContext.getCarService(AppManager::class.java).setSurfaceCallback(surfaceCallback)
+    override fun onStart(owner: LifecycleOwner) {
+        SurfaceRouter.setSink(sink)
     }
 
     override fun onGetTemplate(): Template {
         val strip = ActionStrip.Builder()
+            .addAction(action(R.drawable.ic_menu) { screenManager.pop() })
             .addAction(action(R.drawable.ic_back) { BrowserDisplay.goBack() })
-            .addAction(action(R.drawable.ic_home) { BrowserDisplay.goHome() })
             .addAction(action(R.drawable.ic_reload) { BrowserDisplay.reload() })
             .addAction(action(R.drawable.ic_search) { openSearch() })
             .build()

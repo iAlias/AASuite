@@ -9,12 +9,17 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.viami.aamirror.R
+import com.viami.aamirror.browser.BrowserDisplay
+import com.viami.aamirror.core.UrlResolver
 import com.viami.aamirror.core.MirrorEvent
 import com.viami.aamirror.core.MirrorGateway
 import com.viami.aamirror.core.MirrorState
@@ -59,6 +64,14 @@ class SetupActivity : ComponentActivity() {
                 )
             )
         }
+        findViewById<Button>(R.id.btn_open_url).setOnClickListener { openUrlInCar() }
+        findViewById<EditText>(R.id.edit_url).setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                openUrlInCar(); true
+            } else {
+                false
+            }
+        }
 
         lifecycleScope.launch {
             MirrorGateway.state.collect { render(it) }
@@ -75,6 +88,17 @@ class SetupActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         render(MirrorGateway.state.value)
+    }
+
+    private fun openUrlInCar() {
+        val query = findViewById<EditText>(R.id.edit_url).text.toString()
+        if (query.isBlank()) return
+        if (BrowserDisplay.isAttached) {
+            BrowserDisplay.loadUrl(UrlResolver.resolve(query))
+            Toast.makeText(this, R.string.opened_in_car, Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, R.string.car_not_connected, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun requestCapture() {

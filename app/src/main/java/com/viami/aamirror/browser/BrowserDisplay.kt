@@ -1,4 +1,4 @@
-package com.viami.aabrowser.browser
+package com.viami.aamirror.browser
 
 import android.annotation.SuppressLint
 import android.app.Presentation
@@ -13,7 +13,7 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.viami.aabrowser.core.UrlResolver
+import com.viami.aamirror.core.UrlResolver
 
 /**
  * Renders a WebView straight onto the car screen: the car Surface backs a

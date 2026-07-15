@@ -1,29 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AA Mirror</string>
+    <string name="app_name">AA Suite</string>
 
     <!-- Notifiche -->
     <string name="notification_channel">Mirroring attivo</string>
     <string name="notification_mirroring">Mirroring dello schermo in corso</string>
     <string name="notification_stop">Interrompi</string>
     <string name="notification_channel_start">Richiesta di avvio</string>
-    <string name="start_request_title">AA Mirror</string>
+    <string name="start_request_title">AA Suite</string>
     <string name="start_request_text">Tocca per autorizzare la condivisione dello schermo</string>
 
-    <!-- Display auto -->
-    <string name="car_status_idle">Apri AA Mirror sul telefono e autorizza la cattura</string>
+    <!-- Menu display auto -->
+    <string name="menu_mirror">Mirroring schermo</string>
+    <string name="menu_browser">Browser web</string>
+    <string name="menu_rotation">Blocco rotazione orizzontale</string>
+    <string name="rotation_row_on">Attivo — tocca per disattivare</string>
+    <string name="rotation_row_off">Non attivo — tocca per forzare l\'orizzontale</string>
+
+    <!-- Display auto: mirroring -->
+    <string name="car_status_idle">Apri AA Suite sul telefono e autorizza la cattura</string>
     <string name="car_status_confirm">Conferma sul telefono</string>
     <string name="car_status_error">Permesso negato: apri l\'app sul telefono e riprova</string>
     <string name="car_confirm_on_phone">Conferma la cattura schermo sul telefono</string>
     <string name="car_accessibility_missing">Attiva il servizio Accessibility nelle impostazioni del telefono</string>
     <string name="car_rotation_locked">Bloccato in orizzontale</string>
     <string name="car_rotation_unlocked">Rotazione normale</string>
-    <string name="car_overlay_missing">Concedi "Mostra sopra altre app" nell\'app AA Mirror sul telefono</string>
+    <string name="car_overlay_missing">Concedi "Mostra sopra altre app" nell\'app AA Suite sul telefono</string>
+
+    <!-- Display auto: browser -->
+    <string name="search_hint">URL o ricerca Google</string>
 
     <!-- Activity di setup -->
-    <string name="status_idle">Non attivo. Autorizza la cattura schermo, poi apri AA Mirror sull\'auto.</string>
+    <string name="status_idle">Non attivo. Autorizza la cattura schermo, poi apri AA Suite sull\'auto.</string>
     <string name="status_waiting">In attesa della conferma…</string>
-    <string name="status_ready">Pronto: apri AA Mirror sul display dell\'auto</string>
+    <string name="status_ready">Pronto: apri AA Suite sul display dell\'auto</string>
     <string name="status_mirroring">Mirroring attivo sul display dell\'auto</string>
     <string name="accessibility_on">Servizio Accessibility: attivo ✓</string>
     <string name="accessibility_off">Servizio Accessibility: non attivo</string>
@@ -32,6 +42,10 @@
     <string name="overlay_off">Mostra sopra altre app: non concesso (serve per il blocco orizzontale)</string>
     <string name="btn_overlay">Concedi "Mostra sopra altre app"</string>
     <string name="btn_capture">Autorizza cattura schermo</string>
-    <string name="accessibility_description">Consente ad AA Mirror di inviare Indietro e Home dal display dell\'auto</string>
-    <string name="setup_instructions">Setup Android Auto (una tantum):\n1. App Android Auto → Impostazioni → tocca 10 volte "Versione" per attivare la modalità sviluppatore\n2. Menu ⋮ → Impostazioni sviluppatore → attiva "Fonti sconosciute"\n3. Impostazioni → Personalizza launcher → attiva AA Mirror</string>
+    <string name="accessibility_description">Consente ad AA Suite di inviare tocchi, Indietro e Home dal display dell\'auto</string>
+    <string name="browser_section">Browser: apri una pagina sul display dell\'auto</string>
+    <string name="btn_open_in_car">Apri nell\'auto</string>
+    <string name="opened_in_car">Aperto sul display dell\'auto</string>
+    <string name="car_not_connected">L\'auto non è collegata: apri AA Suite → Browser web dal launcher di Android Auto</string>
+    <string name="setup_instructions">Setup Android Auto (una tantum):\n1. App Android Auto → Impostazioni → tocca 10 volte "Versione" per attivare la modalità sviluppatore\n2. Menu ⋮ → Impostazioni sviluppatore → attiva "Fonti sconosciute"\n3. Impostazioni → Personalizza launcher → attiva AA Suite</string>
 </resources>

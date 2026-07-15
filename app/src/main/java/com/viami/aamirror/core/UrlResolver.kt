@@ -1,4 +1,4 @@
-package com.viami.aabrowser.core
+package com.viami.aamirror.core
 
 import java.net.URLEncoder
 

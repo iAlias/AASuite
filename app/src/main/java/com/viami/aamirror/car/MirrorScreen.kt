@@ -1,11 +1,9 @@
 package com.viami.aamirror.car
 
 import android.util.Log
-import androidx.car.app.AppManager
 import androidx.car.app.CarContext
 import androidx.car.app.CarToast
 import androidx.car.app.Screen
-import androidx.car.app.SurfaceCallback
 import androidx.car.app.SurfaceContainer
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
@@ -23,7 +21,6 @@ import com.viami.aamirror.core.ProjectionStatus
 import com.viami.aamirror.core.TouchMapper
 import com.viami.aamirror.input.MirrorAccessibilityService
 import com.viami.aamirror.input.PhoneKeys
-import com.viami.aamirror.input.RotationLock
 import com.viami.aamirror.mirror.PhoneDisplay
 import com.viami.aamirror.mirror.SurfaceTarget
 import com.viami.aamirror.setup.StartRequests
@@ -31,11 +28,8 @@ import kotlinx.coroutines.launch
 
 class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleObserver {
 
-    private var surfaceContainer: SurfaceContainer? = null
-
-    private val surfaceCallback = object : SurfaceCallback {
-        override fun onSurfaceAvailable(container: SurfaceContainer) {
-            surfaceContainer = container
+    private val sink = object : SurfaceSink {
+        override fun onAttach(container: SurfaceContainer) {
             val surface = container.surface ?: return
             MirrorGateway.attachSurface(
                 SurfaceTarget(surface, container.width, container.height, container.dpi)
@@ -44,12 +38,11 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
             renderStatusIfIdle()
         }
 
-        override fun onSurfaceDestroyed(container: SurfaceContainer) {
-            surfaceContainer = null
+        override fun onDetach() {
             MirrorGateway.detachSurface()
         }
 
-        override fun onClick(x: Float, y: Float) {
+        override fun onTap(x: Float, y: Float) {
             Log.i(TAG, "surface onClick($x, $y)")
             handleTap(x, y)
         }
@@ -65,14 +58,18 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
     }
 
     override fun onCreate(owner: LifecycleOwner) {
-        carContext.getCarService(AppManager::class.java).setSurfaceCallback(surfaceCallback)
         lifecycleScope.launch {
             MirrorGateway.state.collect { renderStatusIfIdle() }
         }
     }
 
+    override fun onStart(owner: LifecycleOwner) {
+        SurfaceRouter.setSink(sink)
+    }
+
     override fun onGetTemplate(): Template {
         val strip = ActionStrip.Builder()
+            .addAction(action(R.drawable.ic_menu) { screenManager.pop() })
             .addAction(action(R.drawable.ic_play_pause) { PhoneKeys.playPause(carContext) })
             .addAction(action(R.drawable.ic_back) {
                 requireAccessibility { MirrorAccessibilityService.pressBack() }
@@ -80,7 +77,6 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
             .addAction(action(R.drawable.ic_home) {
                 requireAccessibility { MirrorAccessibilityService.pressHome() }
             })
-            .addAction(action(R.drawable.ic_rotate) { toggleRotationLock() })
             .build()
         return NavigationTemplate.Builder().setActionStrip(strip).build()
     }
@@ -97,7 +93,8 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
     }
 
     private fun renderStatusIfIdle() {
-        val container = surfaceContainer ?: return
+        if (!SurfaceRouter.isActive(sink)) return
+        val container = SurfaceRouter.container ?: return
         val state = MirrorGateway.state.value
         if (state.isMirroring) return
         val message = when {
@@ -112,7 +109,7 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
     }
 
     private fun handleTap(carX: Float, carY: Float) {
-        val container = surfaceContainer ?: return
+        val container = SurfaceRouter.container ?: return
         if (!MirrorGateway.state.value.isMirroring) return
         val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
         val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
@@ -127,7 +124,7 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
     }
 
     private fun handleScroll(distanceX: Float, distanceY: Float) {
-        val container = surfaceContainer ?: return
+        val container = SurfaceRouter.container ?: return
         if (!MirrorGateway.state.value.isMirroring) return
         val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
         val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
@@ -142,25 +139,6 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         requireAccessibility {
             MirrorAccessibilityService.swipe(startX, startY, endX, endY, durationMs = 100)
         }
-    }
-
-    private fun toggleRotationLock() {
-        if (!RotationLock.canLock(carContext)) {
-            CarToast.makeText(
-                carContext,
-                carContext.getString(R.string.car_overlay_missing),
-                CarToast.LENGTH_LONG,
-            ).show()
-            return
-        }
-        val locked = RotationLock.toggle(carContext)
-        CarToast.makeText(
-            carContext,
-            carContext.getString(
-                if (locked) R.string.car_rotation_locked else R.string.car_rotation_unlocked
-            ),
-            CarToast.LENGTH_LONG,
-        ).show()
     }
 
     private fun requireAccessibility(send: () -> Boolean) {

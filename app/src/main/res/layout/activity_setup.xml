@@ -48,6 +48,27 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/browser_section" />
+
+    <EditText
+        android:id="@+id/edit_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/search_hint"
+        android:imeOptions="actionGo"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+    <Button
+        android:id="@+id/btn_open_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_open_in_car" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:textSize="14sp"
         android:text="@string/setup_instructions" />
