@@ -19,8 +19,8 @@ class SearchScreen(
             override fun onSearchTextChanged(searchText: String) = Unit
 
             override fun onSearchSubmitted(searchText: String) {
-                onQuery(searchText)
                 screenManager.pop()
+                onQuery(searchText)
             }
         }
         return SearchTemplate.Builder(callback)

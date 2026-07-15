@@ -40,7 +40,7 @@ class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleO
             )
             .addItem(
                 row(R.string.menu_browser, R.drawable.ic_globe) {
-                    screenManager.push(BrowserScreen(carContext))
+                    screenManager.push(BookmarksScreen(carContext))
                 }
             )
             .addItem(rotationRow())

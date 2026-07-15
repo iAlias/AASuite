@@ -74,6 +74,9 @@ class SetupActivity : ComponentActivity() {
             )
         }
         findViewById<Button>(R.id.btn_open_url).setOnClickListener { openUrlInCar() }
+        findViewById<Button>(R.id.btn_bookmarks).setOnClickListener {
+            startActivity(Intent(this, BookmarksActivity::class.java))
+        }
         findViewById<EditText>(R.id.edit_url).setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 openUrlInCar(); true

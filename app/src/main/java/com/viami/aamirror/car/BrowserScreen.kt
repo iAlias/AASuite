@@ -2,7 +2,6 @@ package com.viami.aamirror.car
 
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
-import androidx.car.app.SurfaceContainer
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
 import androidx.car.app.model.CarIcon
@@ -17,33 +16,12 @@ import com.viami.aamirror.core.UrlResolver
 
 class BrowserScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleObserver {
 
-    private val sink = object : SurfaceSink {
-        override fun onAttach(container: SurfaceContainer) {
-            val surface = container.surface ?: return
-            BrowserDisplay.attach(
-                carContext, surface, container.width, container.height, container.dpi
-            )
-        }
-
-        override fun onDetach() {
-            BrowserDisplay.detach()
-        }
-
-        override fun onTap(x: Float, y: Float) {
-            BrowserDisplay.tap(x, y)
-        }
-
-        override fun onScroll(distanceX: Float, distanceY: Float) {
-            BrowserDisplay.scroll(distanceX, distanceY)
-        }
-    }
-
     init {
         lifecycle.addObserver(this)
     }
 
     override fun onStart(owner: LifecycleOwner) {
-        SurfaceRouter.setSink(sink)
+        SurfaceRouter.setSink(BrowserSink.of(carContext))
     }
 
     override fun onGetTemplate(): Template {

@@ -79,6 +79,12 @@
         android:layout_height="wrap_content"
         android:text="@string/btn_open_in_car" />
 
+    <Button
+        android:id="@+id/btn_bookmarks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_bookmarks" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

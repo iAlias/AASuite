@@ -32,6 +32,16 @@
 
     <!-- Display auto: browser -->
     <string name="search_hint">URL o ricerca Google</string>
+    <string name="row_search">Cerca o apri URL…</string>
+    <string name="bookmarks_title">Preferiti browser</string>
+    <string name="btn_bookmarks">Gestisci preferiti</string>
+    <string name="btn_add_bookmark">Aggiungi preferito</string>
+    <string name="edit_bookmark">Modifica preferito</string>
+    <string name="bookmark_title_hint">Nome (es. YouTube)</string>
+    <string name="bookmark_url_hint">Indirizzo (es. www.youtube.com)</string>
+    <string name="save">Salva</string>
+    <string name="delete">Elimina</string>
+    <string name="cancel">Annulla</string>
 
     <!-- Activity di setup -->
     <string name="status_idle">Non attivo. Autorizza la cattura schermo, poi apri AA Suite sull\'auto.</string>

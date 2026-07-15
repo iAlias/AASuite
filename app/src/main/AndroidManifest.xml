@@ -54,6 +54,11 @@
         </service>
 
         <activity
+            android:name=".setup.BookmarksActivity"
+            android:exported="false"
+            android:label="@string/bookmarks_title" />
+
+        <activity
             android:name=".setup.SetupActivity"
             android:exported="true"
             android:launchMode="singleTask">
