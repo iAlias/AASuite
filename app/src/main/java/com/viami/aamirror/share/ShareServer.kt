@@ -54,8 +54,8 @@ class ShareServer(
             }
             try {
                 handle(client)
-            } catch (e: IOException) {
-                // client dropped; keep serving
+            } catch (e: Exception) {
+                // client dropped or callback failed; keep serving
             }
         }
     }
