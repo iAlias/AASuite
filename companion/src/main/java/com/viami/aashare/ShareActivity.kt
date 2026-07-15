@@ -21,32 +21,33 @@ class ShareActivity : Activity() {
             return
         }
         Thread {
-            val ok = send(text)
+            val code = send(text)
             runOnUiThread {
-                Toast.makeText(
-                    this,
-                    if (ok) R.string.sent_ok else R.string.send_failed,
-                    Toast.LENGTH_LONG,
-                ).show()
+                val messageRes = when (code) {
+                    200 -> R.string.sent_ok
+                    400 -> R.string.no_url_in_text
+                    else -> R.string.send_failed
+                }
+                Toast.makeText(this, messageRes, Toast.LENGTH_LONG).show()
                 finish()
             }
         }.start()
     }
 
-    private fun send(text: String): Boolean = try {
-        val gateway = gatewayAddress() ?: return false
+    private fun send(text: String): Int = try {
+        val gateway = gatewayAddress() ?: return -1
         val connection =
             URL("http://$gateway:8977/open").openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
         connection.doOutput = true
         connection.connectTimeout = 3000
         connection.readTimeout = 3000
-        connection.outputStream.use { it.write(text.toByteArray()) }
-        val ok = connection.responseCode == 200
+        connection.outputStream.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+        val code = connection.responseCode
         connection.disconnect()
-        ok
+        code
     } catch (e: Exception) {
-        false
+        -1
     }
 
     private fun gatewayAddress(): String? {

@@ -22,10 +22,10 @@ class MirrorSession : Session(), DefaultLifecycleObserver {
     }
 
     override fun onCreate(owner: LifecycleOwner) {
-        shareServer.start()
         owner.lifecycle.coroutineScope.launch {
             ShareInbox.links.collect { url -> openInBrowser(url) }
         }
+        shareServer.start()
     }
 
     override fun onDestroy(owner: LifecycleOwner) {

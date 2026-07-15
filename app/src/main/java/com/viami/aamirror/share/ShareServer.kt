@@ -4,6 +4,7 @@ import com.viami.aamirror.core.SharedTextParser
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.logging.Logger
 
 /**
  * One-endpoint HTTP server: POST /open with shared text in the body opens
@@ -26,6 +27,7 @@ class ShareServer(
         val socket = try {
             ServerSocket(port)
         } catch (e: IOException) {
+            Logger.getLogger("ShareServer").warning("port $port unavailable: $e")
             return
         }
         serverSocket = socket
@@ -54,8 +56,9 @@ class ShareServer(
             }
             try {
                 handle(client)
-            } catch (e: Exception) {
-                // client dropped or callback failed; keep serving
+            } catch (t: Throwable) {
+                // Last-resort backstop: a hostile client (or an OOM from a bogus
+                // Content-Length) must never kill the server thread or the app.
             }
         }
     }
@@ -63,32 +66,52 @@ class ShareServer(
     private fun handle(client: Socket) {
         client.use { c ->
             c.soTimeout = 3000
-            val reader = c.getInputStream().bufferedReader()
-            val headLines = mutableListOf<String>()
-            while (true) {
-                val line = reader.readLine() ?: return
-                if (line.isEmpty()) break
-                headLines.add(line)
+            val input = c.getInputStream()
+            val head = readHead(input) ?: return respond(c, 400)
+            val parsed = ShareHttp.parseHead(head) ?: return respond(c, 400)
+            if (parsed.method != "POST" || parsed.path != "/open") return respond(c, 404)
+            if (parsed.contentLength < 0 || parsed.contentLength > MAX_BODY_BYTES) {
+                return respond(c, 400)
             }
-            val head = ShareHttp.parseHead(headLines) ?: return respond(c, 400)
-            val body = readBody(reader, head.contentLength)
-            if (head.method != "POST" || head.path != "/open") return respond(c, 404)
+            val body = readBody(input, parsed.contentLength)
             val url = SharedTextParser.firstUrl(body) ?: return respond(c, 400)
             onUrl(url)
             respond(c, 200)
         }
     }
 
-    private fun readBody(reader: java.io.BufferedReader, length: Int): String {
+    /** Reads header bytes until the blank line; null if malformed or over 8 KB. */
+    private fun readHead(input: java.io.InputStream): List<String>? {
+        val buffer = java.io.ByteArrayOutputStream()
+        var trailing = 0 // consecutive bytes of the \r\n\r\n terminator seen
+        while (buffer.size() < MAX_HEAD_BYTES) {
+            val byte = input.read()
+            if (byte < 0) return null
+            buffer.write(byte)
+            trailing = when {
+                byte == '\r'.code && (trailing == 0 || trailing == 2) -> trailing + 1
+                byte == '\n'.code && (trailing == 1 || trailing == 3) -> trailing + 1
+                else -> 0
+            }
+            if (trailing == 4) {
+                return buffer.toString(Charsets.UTF_8.name())
+                    .split("\r\n")
+                    .filter { it.isNotEmpty() }
+            }
+        }
+        return null
+    }
+
+    private fun readBody(input: java.io.InputStream, length: Int): String {
         if (length <= 0) return ""
-        val buffer = CharArray(length)
+        val bytes = ByteArray(length)
         var read = 0
         while (read < length) {
-            val n = reader.read(buffer, read, length - read)
+            val n = input.read(bytes, read, length - read)
             if (n < 0) break
             read += n
         }
-        return String(buffer, 0, read)
+        return String(bytes, 0, read, Charsets.UTF_8)
     }
 
     private fun respond(client: Socket, code: Int) {
@@ -106,5 +129,7 @@ class ShareServer(
 
     companion object {
         const val DEFAULT_PORT = 8977
+        private const val MAX_HEAD_BYTES = 8 * 1024
+        private const val MAX_BODY_BYTES = 64 * 1024
     }
 }
