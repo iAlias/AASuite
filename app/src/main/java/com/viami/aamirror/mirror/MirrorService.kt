@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.viami.aamirror.R
 import com.viami.aamirror.core.MirrorEvent
 import com.viami.aamirror.core.MirrorGateway
+import com.viami.aamirror.input.BrightnessSaver
 import kotlinx.coroutines.launch
 
 class MirrorService : LifecycleService() {
@@ -104,6 +105,7 @@ class MirrorService : LifecycleService() {
         acquired.registerCallback(projectionCallback, null)
         projection = acquired
         source = LocalScreenSource(this, acquired)
+        BrightnessSaver.dim(this)
         MirrorGateway.dispatch(MirrorEvent.ProjectionAcquired)
         // The collector in onCreate saw source == null for the current value;
         // deliver the already-attached surface (if any) by hand.
@@ -111,6 +113,7 @@ class MirrorService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        BrightnessSaver.restore(this)
         source?.release()
         source = null
         projection?.unregisterCallback(projectionCallback)

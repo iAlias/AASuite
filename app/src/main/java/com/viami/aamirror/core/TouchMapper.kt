@@ -22,4 +22,23 @@ object TouchMapper {
             y = (carY - content.y) / content.height * phoneHeight,
         )
     }
+
+    /**
+     * Maps a tap in fill (center-crop) mode: the whole car surface shows the
+     * [AspectFit.sourceCrop] region of the phone, so every tap lands on it.
+     */
+    fun mapTapFill(
+        carX: Float,
+        carY: Float,
+        carWidth: Int,
+        carHeight: Int,
+        phoneWidth: Int,
+        phoneHeight: Int,
+    ): PhonePoint {
+        val crop = AspectFit.sourceCrop(phoneWidth, phoneHeight, carWidth, carHeight)
+        return PhonePoint(
+            x = crop.x + carX / carWidth * crop.width,
+            y = crop.y + carY / carHeight * crop.height,
+        )
+    }
 }

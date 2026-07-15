@@ -46,6 +46,19 @@
         android:text="@string/btn_overlay" />
 
     <TextView
+        android:id="@+id/txt_brightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/brightness_off" />
+
+    <Button
+        android:id="@+id/btn_brightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_brightness" />
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"

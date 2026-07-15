@@ -13,6 +13,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.viami.aamirror.R
+import com.viami.aamirror.core.MirrorSettings
 import com.viami.aamirror.input.RotationLock
 
 /** Root menu of AA Suite: pick a mode or toggle the rotation lock. */
@@ -43,6 +44,7 @@ class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleO
                 }
             )
             .addItem(rotationRow())
+            .addItem(fillRow())
             .build()
         return ListTemplate.Builder()
             .setSingleList(list)
@@ -62,6 +64,23 @@ class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleO
             .addText(carContext.getString(state))
             .setImage(icon(R.drawable.ic_rotate))
             .setOnClickListener { toggleRotationLock() }
+            .build()
+    }
+
+    private fun fillRow(): Row {
+        val state = if (MirrorSettings.fillScreen) {
+            R.string.fill_row_on
+        } else {
+            R.string.fill_row_off
+        }
+        return Row.Builder()
+            .setTitle(carContext.getString(R.string.menu_fill))
+            .addText(carContext.getString(state))
+            .setImage(icon(R.drawable.ic_fill))
+            .setOnClickListener {
+                MirrorSettings.fillScreen = !MirrorSettings.fillScreen
+                invalidate()
+            }
             .build()
     }
 

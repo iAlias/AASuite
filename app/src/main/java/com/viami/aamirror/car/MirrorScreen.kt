@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.viami.aamirror.R
 import com.viami.aamirror.core.AspectFit
 import com.viami.aamirror.core.MirrorGateway
+import com.viami.aamirror.core.MirrorSettings
 import com.viami.aamirror.core.ProjectionStatus
 import com.viami.aamirror.core.TouchMapper
 import com.viami.aamirror.input.MirrorAccessibilityService
@@ -112,9 +113,16 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         val container = SurfaceRouter.container ?: return
         if (!MirrorGateway.state.value.isMirroring) return
         val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
-        val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
-        val point = TouchMapper.mapTap(carX, carY, content, phoneWidth, phoneHeight)
-        Log.i(TAG, "tap car=($carX, $carY) content=$content phone=${phoneWidth}x$phoneHeight -> $point")
+        val point = if (MirrorSettings.fillScreen) {
+            TouchMapper.mapTapFill(
+                carX, carY, container.width, container.height, phoneWidth, phoneHeight
+            )
+        } else {
+            val content =
+                AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
+            TouchMapper.mapTap(carX, carY, content, phoneWidth, phoneHeight)
+        }
+        Log.i(TAG, "tap car=($carX, $carY) phone=${phoneWidth}x$phoneHeight -> $point")
         if (point == null) return
         requireAccessibility {
             val sent = MirrorAccessibilityService.tap(point.x, point.y)
@@ -127,11 +135,22 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
         val container = SurfaceRouter.container ?: return
         if (!MirrorGateway.state.value.isMirroring) return
         val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(carContext)
-        val content = AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
         // Scale car-surface distances up to phone pixels, then swipe as a
         // finger would move: end = start - distance, anchored at screen center.
-        val scaleX = phoneWidth.toFloat() / content.width
-        val scaleY = phoneHeight.toFloat() / content.height
+        val scaleX: Float
+        val scaleY: Float
+        if (MirrorSettings.fillScreen) {
+            val crop = AspectFit.sourceCrop(
+                phoneWidth, phoneHeight, container.width, container.height
+            )
+            scaleX = crop.width.toFloat() / container.width
+            scaleY = crop.height.toFloat() / container.height
+        } else {
+            val content =
+                AspectFit.fit(phoneWidth, phoneHeight, container.width, container.height)
+            scaleX = phoneWidth.toFloat() / content.width
+            scaleY = phoneHeight.toFloat() / content.height
+        }
         val startX = phoneWidth / 2f
         val startY = phoneHeight / 2f
         val endX = (startX - distanceX * scaleX).coerceIn(1f, phoneWidth - 1f)

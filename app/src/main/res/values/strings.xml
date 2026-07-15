@@ -16,6 +16,9 @@
     <string name="menu_rotation">Blocco rotazione orizzontale</string>
     <string name="rotation_row_on">Attivo — tocca per disattivare</string>
     <string name="rotation_row_off">Non attivo — tocca per forzare l\'orizzontale</string>
+    <string name="menu_fill">Riempi schermo (mirroring)</string>
+    <string name="fill_row_on">Attivo — l\'immagine riempie lo schermo, bordi ritagliati</string>
+    <string name="fill_row_off">Non attivo — immagine intera con bande nere</string>
 
     <!-- Display auto: mirroring -->
     <string name="car_status_idle">Apri AA Suite sul telefono e autorizza la cattura</string>
@@ -42,6 +45,9 @@
     <string name="overlay_off">Mostra sopra altre app: non concesso (serve per il blocco orizzontale)</string>
     <string name="btn_overlay">Concedi "Mostra sopra altre app"</string>
     <string name="btn_capture">Autorizza cattura schermo</string>
+    <string name="brightness_on">Risparmio energetico: attivo ✓ (luminosità al minimo durante il mirroring)</string>
+    <string name="brightness_off">Risparmio energetico: non attivo (serve "Modifica impostazioni di sistema")</string>
+    <string name="btn_brightness">Attiva risparmio energetico</string>
     <string name="accessibility_description">Consente ad AA Suite di inviare tocchi, Indietro e Home dal display dell\'auto</string>
     <string name="browser_section">Browser: apri una pagina sul display dell\'auto</string>
     <string name="btn_open_in_car">Apri nell\'auto</string>

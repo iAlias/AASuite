@@ -24,6 +24,7 @@ import com.viami.aamirror.core.MirrorEvent
 import com.viami.aamirror.core.MirrorGateway
 import com.viami.aamirror.core.MirrorState
 import com.viami.aamirror.core.ProjectionStatus
+import com.viami.aamirror.input.BrightnessSaver
 import com.viami.aamirror.input.MirrorAccessibilityService
 import com.viami.aamirror.input.RotationLock
 import com.viami.aamirror.mirror.MirrorService
@@ -60,6 +61,14 @@ class SetupActivity : ComponentActivity() {
             startActivity(
                 Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName"),
+                )
+            )
+        }
+        findViewById<Button>(R.id.btn_brightness).setOnClickListener {
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_WRITE_SETTINGS,
                     Uri.parse("package:$packageName"),
                 )
             )
@@ -127,6 +136,12 @@ class SetupActivity : ComponentActivity() {
                 getString(R.string.overlay_on)
             } else {
                 getString(R.string.overlay_off)
+            }
+        findViewById<TextView>(R.id.txt_brightness).text =
+            if (BrightnessSaver.canDim(this)) {
+                getString(R.string.brightness_on)
+            } else {
+                getString(R.string.brightness_off)
             }
     }
 
