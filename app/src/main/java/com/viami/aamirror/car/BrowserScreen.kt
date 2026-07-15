@@ -21,7 +21,7 @@ class BrowserScreen(carContext: CarContext) : Screen(carContext), DefaultLifecyc
     }
 
     override fun onStart(owner: LifecycleOwner) {
-        SurfaceRouter.setSink(BrowserSink.of(carContext))
+        SurfaceRouter.setSink(WebSink.of(carContext, BrowserDisplay))
     }
 
     override fun onGetTemplate(): Template {

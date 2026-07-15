@@ -15,20 +15,37 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.viami.aamirror.core.UrlResolver
 
+/** Smart-TV user agent so youtube.com/tv serves the leanback interface. */
+const val TV_USER_AGENT =
+    "Mozilla/5.0 (SMART-TV; Linux; Tizen 5.5) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Version/5.5 TV Safari/537.36"
+
+/** The plain web browser mode. */
+val BrowserDisplay: WebDisplay = WebDisplay(homeUrl = UrlResolver.HOME)
+
+/** The YouTube "TV" mode, cast target for the second phone. */
+val YouTubeDisplay: WebDisplay = WebDisplay(
+    homeUrl = "https://www.youtube.com/tv",
+    userAgent = TV_USER_AGENT,
+)
+
 /**
  * Renders a WebView straight onto the car screen: the car Surface backs a
  * private VirtualDisplay, a Presentation shows the WebView on it, and car
  * taps/scrolls are injected into the view hierarchy as MotionEvents.
  */
-object BrowserDisplay {
+class WebDisplay(
+    private val homeUrl: String,
+    private val userAgent: String? = null,
+) {
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var virtualDisplay: VirtualDisplay? = null
     private var presentation: Presentation? = null
     private var webView: WebView? = null
 
-    /** Survives detach/attach cycles so the page comes back after HUN focus loss. */
-    private var currentUrl: String = UrlResolver.HOME
+    /** Survives detach/attach cycles so the page comes back after focus loss. */
+    private var currentUrl: String = homeUrl
 
     val isAttached: Boolean
         get() = presentation != null
@@ -39,7 +56,7 @@ object BrowserDisplay {
             detachNow()
             val manager = context.getSystemService(DisplayManager::class.java)
             val display = manager.createVirtualDisplay(
-                "AABrowser",
+                "AAWeb",
                 width,
                 height,
                 densityDpi,
@@ -52,6 +69,7 @@ object BrowserDisplay {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.mediaPlaybackRequiresUserGesture = false
+                userAgent?.let { settings.userAgentString = it }
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView, url: String) {
                         currentUrl = url
@@ -89,7 +107,7 @@ object BrowserDisplay {
         mainHandler.post { webView?.let { if (it.canGoBack()) it.goBack() } }
     }
 
-    fun goHome() = loadUrl(UrlResolver.HOME)
+    fun goHome() = loadUrl(homeUrl)
 
     fun reload() {
         mainHandler.post { webView?.reload() }
