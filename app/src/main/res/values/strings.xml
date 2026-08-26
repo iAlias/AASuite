@@ -12,8 +12,16 @@
 
     <!-- Menu display auto -->
     <string name="menu_mirror">Mirroring schermo</string>
+    <!-- Le celle della griglia troncano: titoli brevi -->
+    <string name="menu_mirror_short">Mirroring</string>
+    <string name="menu_browser_short">Browser</string>
+    <string name="menu_youtube_short">YouTube</string>
     <string name="menu_browser">Browser web</string>
     <string name="menu_youtube">YouTube Cast</string>
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_layout">Layout menu</string>
+    <string name="layout_row_grid">Griglia — tocca per passare a lista</string>
+    <string name="layout_row_list">Lista — tocca per passare a griglia</string>
     <string name="menu_rotation">Blocco rotazione orizzontale</string>
     <string name="rotation_row_on">Attivo — tocca per disattivare</string>
     <string name="rotation_row_off">Non attivo — tocca per forzare l\'orizzontale</string>

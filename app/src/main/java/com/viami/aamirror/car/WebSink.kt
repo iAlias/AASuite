@@ -1,5 +1,6 @@
 package com.viami.aamirror.car
 
+import android.util.Log
 import androidx.car.app.CarContext
 import androidx.car.app.SurfaceContainer
 import com.viami.aamirror.browser.WebDisplay
@@ -15,6 +16,10 @@ class WebSink private constructor(
 
     override fun onAttach(container: SurfaceContainer) {
         val surface = container.surface ?: return
+        Log.i(
+            TAG,
+            "onAttach container=${container.width}x${container.height} dpi=${container.dpi}",
+        )
         display.attach(carContext, surface, container.width, container.height, container.dpi)
     }
 
@@ -31,6 +36,7 @@ class WebSink private constructor(
     }
 
     companion object {
+        private const val TAG = "WebSink"
         private val cache = mutableMapOf<WebDisplay, WebSink>()
 
         fun of(carContext: CarContext, display: WebDisplay): WebSink =

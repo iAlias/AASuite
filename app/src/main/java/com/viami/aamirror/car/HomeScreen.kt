@@ -1,10 +1,12 @@
 package com.viami.aamirror.car
 
 import androidx.car.app.CarContext
-import androidx.car.app.CarToast
 import androidx.car.app.Screen
 import androidx.car.app.model.Action
+import androidx.car.app.model.ActionStrip
 import androidx.car.app.model.CarIcon
+import androidx.car.app.model.GridItem
+import androidx.car.app.model.GridTemplate
 import androidx.car.app.model.ItemList
 import androidx.car.app.model.ListTemplate
 import androidx.car.app.model.Row
@@ -13,11 +15,35 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.viami.aamirror.R
+import com.viami.aamirror.core.MenuLayout
 import com.viami.aamirror.core.MirrorSettings
-import com.viami.aamirror.input.RotationLock
+import com.viami.aamirror.setup.SettingsStore
 
-/** Root menu of AA Suite: pick a mode or toggle the rotation lock. */
+/** Root menu of AA Suite: pick a mode, or open the settings. */
 class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleObserver {
+
+    /**
+     * One entry of the menu. Grid cells truncate long titles, so they carry
+     * a short label of their own.
+     */
+    private class Mode(
+        val titleRes: Int,
+        val shortTitleRes: Int,
+        val iconRes: Int,
+        val open: () -> Unit,
+    )
+
+    private val modes = listOf(
+        Mode(R.string.menu_mirror, R.string.menu_mirror_short, R.drawable.ic_app) {
+            screenManager.push(MirrorScreen(carContext))
+        },
+        Mode(R.string.menu_browser, R.string.menu_browser_short, R.drawable.ic_globe) {
+            screenManager.push(BookmarksScreen(carContext))
+        },
+        Mode(R.string.menu_youtube, R.string.menu_youtube_short, R.drawable.ic_cast) {
+            screenManager.push(YouTubeScreen(carContext))
+        },
+    )
 
     init {
         lifecycle.addObserver(this)
@@ -25,88 +51,64 @@ class HomeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycleO
 
     override fun onCreate(owner: LifecycleOwner) {
         SurfaceRouter.register(carContext)
+        SettingsStore.load(carContext)
     }
 
     override fun onStart(owner: LifecycleOwner) {
         SurfaceRouter.setSink(null)
-    }
-
-    override fun onGetTemplate(): Template {
-        val list = ItemList.Builder()
-            .addItem(
-                row(R.string.menu_mirror, R.drawable.ic_app) {
-                    screenManager.push(MirrorScreen(carContext))
-                }
-            )
-            .addItem(
-                row(R.string.menu_browser, R.drawable.ic_globe) {
-                    screenManager.push(BookmarksScreen(carContext))
-                }
-            )
-            .addItem(
-                row(R.string.menu_youtube, R.drawable.ic_cast) {
-                    screenManager.push(YouTubeScreen(carContext))
-                }
-            )
-            .addItem(rotationRow())
-            .addItem(fillRow())
-            .build()
-        return ListTemplate.Builder()
-            .setSingleList(list)
-            .setTitle(carContext.getString(R.string.app_name))
-            .setHeaderAction(Action.APP_ICON)
-            .build()
-    }
-
-    private fun rotationRow(): Row {
-        val state = if (RotationLock.isLocked) {
-            R.string.rotation_row_on
-        } else {
-            R.string.rotation_row_off
-        }
-        return Row.Builder()
-            .setTitle(carContext.getString(R.string.menu_rotation))
-            .addText(carContext.getString(state))
-            .setImage(icon(R.drawable.ic_rotate))
-            .setOnClickListener { toggleRotationLock() }
-            .build()
-    }
-
-    private fun fillRow(): Row {
-        val state = if (MirrorSettings.fillScreen) {
-            R.string.fill_row_on
-        } else {
-            R.string.fill_row_off
-        }
-        return Row.Builder()
-            .setTitle(carContext.getString(R.string.menu_fill))
-            .addText(carContext.getString(state))
-            .setImage(icon(R.drawable.ic_fill))
-            .setOnClickListener {
-                MirrorSettings.fillScreen = !MirrorSettings.fillScreen
-                invalidate()
-            }
-            .build()
-    }
-
-    private fun toggleRotationLock() {
-        if (!RotationLock.canLock(carContext)) {
-            CarToast.makeText(
-                carContext,
-                carContext.getString(R.string.car_overlay_missing),
-                CarToast.LENGTH_LONG,
-            ).show()
-            return
-        }
-        RotationLock.toggle(carContext)
+        // The settings screen may have changed the layout while we were away.
         invalidate()
     }
 
-    private fun row(titleRes: Int, iconRes: Int, onClick: () -> Unit): Row =
-        Row.Builder()
-            .setTitle(carContext.getString(titleRes))
-            .setImage(icon(iconRes))
-            .setOnClickListener(onClick)
+    override fun onGetTemplate(): Template =
+        if (MirrorSettings.menuLayout == MenuLayout.GRID) gridTemplate() else listTemplate()
+
+    private fun gridTemplate(): Template {
+        val items = ItemList.Builder()
+        for (mode in modes) {
+            items.addItem(
+                GridItem.Builder()
+                    .setTitle(carContext.getString(mode.shortTitleRes))
+                    .setImage(icon(mode.iconRes))
+                    .setOnClickListener(mode.open)
+                    .build()
+            )
+        }
+        return GridTemplate.Builder()
+            .setSingleList(items.build())
+            .setTitle(carContext.getString(R.string.app_name))
+            .setHeaderAction(Action.APP_ICON)
+            .setActionStrip(settingsStrip())
+            .build()
+    }
+
+    private fun listTemplate(): Template {
+        val items = ItemList.Builder()
+        for (mode in modes) {
+            items.addItem(
+                Row.Builder()
+                    .setTitle(carContext.getString(mode.titleRes))
+                    .setImage(icon(mode.iconRes))
+                    .setOnClickListener(mode.open)
+                    .build()
+            )
+        }
+        return ListTemplate.Builder()
+            .setSingleList(items.build())
+            .setTitle(carContext.getString(R.string.app_name))
+            .setHeaderAction(Action.APP_ICON)
+            .setActionStrip(settingsStrip())
+            .build()
+    }
+
+    private fun settingsStrip(): ActionStrip =
+        ActionStrip.Builder()
+            .addAction(
+                Action.Builder()
+                    .setIcon(icon(R.drawable.ic_settings))
+                    .setOnClickListener { screenManager.push(SettingsScreen(carContext)) }
+                    .build()
+            )
             .build()
 
     private fun icon(iconRes: Int): CarIcon =

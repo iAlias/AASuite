@@ -31,6 +31,7 @@ class YouTubeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecyc
     override fun onGetTemplate(): Template {
         val strip = ActionStrip.Builder()
             .addAction(action(R.drawable.ic_menu) { screenManager.pop() })
+            .addAction(action(R.drawable.ic_back) { YouTubeDisplay.goBack() })
             .addAction(action(R.drawable.ic_reload) { YouTubeDisplay.reload() })
             .build()
         return NavigationTemplate.Builder().setActionStrip(strip).build()
