@@ -1,254 +1,280 @@
 # AA Suite
 
-Un'app Android Auto che porta sul display dell'auto tre cose che il sistema
-non offre: **lo schermo del telefono**, un **browser web** e **YouTube in
-modalità TV**, comandabile dal telefono di un passeggero come se fosse una
-smart TV.
+**Screen mirroring, a web browser and YouTube's TV interface on your car's Android Auto display.**
 
-Funziona sfruttando la categoria *navigazione* della Car App Library, l'unica
-che concede il permesso `ACCESS_SURFACE`: da lì l'app disegna sulla superficie
-dell'auto quello che vuole.
+[![Platform](https://img.shields.io/badge/platform-Android%20Auto-3ddc84)](https://developer.android.com/training/cars)
+[![Min SDK](https://img.shields.io/badge/minSdk-26-blue)](https://apilevels.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.x-7f52ff)](https://kotlinlang.org/)
+[![Version](https://img.shields.io/badge/version-0.6-orange)](#distribution)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> **Uso personale.** L'app non è pubblicabile sullo store: duplica lo schermo e
-> mostra contenuti web sul display dell'auto, cose che le norme Play per
-> Android Auto non consentono in distribuzione pubblica. Va installata dal
-> canale **Test interno** di Play Console (vedi [Distribuzione](#distribuzione)).
+🇮🇹 [Leggi in italiano](README.it.md)
+
+Android Auto gives you maps, music and messages. AA Suite adds the three things
+it deliberately leaves out: **your phone's screen**, a **real web browser**, and
+**YouTube in TV mode**, which a passenger can drive from their own phone with the
+ordinary cast button.
+
+It works by registering as a *navigation* car app — the only category granted
+`ACCESS_SURFACE` — and then drawing whatever it likes on the car's surface.
+
+> [!IMPORTANT]
+> **Personal use.** This app cannot be published on the Play Store: mirroring a
+> phone screen and showing web content on the car display are both outside what
+> Play's Android Auto policies allow for public distribution. It is installed
+> through Play Console's **internal testing** track. See [Distribution](#distribution).
 
 ---
 
-## Il menu dell'auto
+## Contents
 
-| Griglia (predefinito) | Lista |
+- [The car menu](#the-car-menu)
+- [The three modes](#the-three-modes)
+- [Sharing a link from a second phone](#sharing-a-link-from-a-second-phone)
+- [Settings](#settings)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Building](#building)
+- [One-time phone setup](#one-time-phone-setup)
+- [Running without a car](#running-without-a-car)
+- [Distribution](#distribution)
+- [Testing](#testing)
+- [Known limitations](#known-limitations)
+- [License](#license)
+
+---
+
+## The car menu
+
+| Grid (default) | List |
 |---|---|
-| ![Menu a griglia](docs/screenshots/home-grid.png) | ![Menu a lista](docs/screenshots/home-list.png) |
+| ![Car menu as a grid](docs/screenshots/home-grid.png) | ![Car menu as a list](docs/screenshots/home-list.png) |
 
-Il layout si cambia dalla schermata **Impostazioni**, raggiungibile con l'icona
-⚙ in alto a destra.
-
-*(La griglia è catturata nell'emulatore Desktop Head Unit, che ritaglia il lato
-destro della finestra: sul display reale le tre celle sono tutte visibili.)*
+The layout is a preference, switched from the **Settings** screen behind the ⚙
+action in the top right.
 
 ---
 
-## Le tre modalità
+## The three modes
 
-### 1. Mirroring schermo
+### Screen mirroring
 
-Duplica lo schermo del telefono sul display dell'auto.
+Puts the phone's screen on the car display.
 
-- `MediaProjection` alimenta un `VirtualDisplay` che scrive direttamente sulla
-  Surface dell'auto, senza passaggi intermedi
-- **Tocchi e scorrimenti** fatti sul display auto vengono rimappati in
-  coordinate del telefono e reiniettati come gesture reali tramite un servizio
-  di accessibilità
-- Barra azioni: menu · play/pausa · indietro · home
-- Due rese possibili: **aspect-fit** (immagine intera, bande nere) oppure
-  **riempi schermo** (center-crop, bordi tagliati)
-- Durante il mirroring la luminosità del telefono può essere portata al minimo
-  per risparmiare batteria, lasciando intatto quello che si vede in auto
+- `MediaProjection` feeds a `VirtualDisplay` that writes straight onto the car's
+  surface, with nothing in between
+- **Taps and swipes** made on the car display are mapped back into phone
+  coordinates and replayed as real gestures through an accessibility service
+- Action bar: menu · play/pause · back · home
+- Two renderings: **aspect-fit** (whole screen, black bars) or **fill screen**
+  (center-crop, edges trimmed)
+- The phone's brightness can drop to its minimum while mirroring — the car
+  display is unaffected, the battery is not
 
-### 2. Browser web
+### Web browser
 
-Un browser vero e proprio renderizzato sul display dell'auto.
+A genuine browser rendered on the car display.
 
-- Una `WebView` vive su un `VirtualDisplay` privato mostrato da una
-  `Presentation`; il display è alimentato dalla Surface dell'auto
-- I tocchi dell'auto diventano `MotionEvent` iniettati nella gerarchia di view
-- **Preferiti** gestiti dal telefono e sfogliabili dall'auto
-- Ricerca Google o URL diretto dalla schermata di ricerca dell'auto
-- Dal telefono si può spingere una pagina sul display dell'auto con un tocco
+- A `WebView` lives on a private `VirtualDisplay` shown through a `Presentation`,
+  backed by the car surface
+- Car taps become `MotionEvent`s dispatched into the view hierarchy
+- **Bookmarks** are edited on the phone and browsed from the car
+- Google search or a direct URL from the car's search screen
+- A page can also be pushed from the phone to the car display with one tap
 
-### 3. YouTube Cast
+### YouTube Cast
 
-Il telefono collegato all'auto si comporta come una **smart TV YouTube**.
+The phone connected to the car behaves like a **YouTube smart TV**.
 
-![Abbinamento YouTube TV](docs/screenshots/youtube-pairing.png)
+![YouTube TV pairing screen](docs/screenshots/youtube-pairing.png)
 
-- Carica `youtube.com/tv` con uno user-agent smart-TV, ottenendo l'interfaccia
-  leanback
-- Il display auto è più stretto di una TV: la WebView **riduce lo zoom** finché
-  la pagina non dispone di un viewport da 1280 px, così l'interfaccia TV si
-  compone con le proporzioni giuste invece di essere schiacciata
-- **Abbinamento una tantum**: sull'auto Impostazioni → *Collega con codice TV*,
-  sul telefono del passeggero YouTube → *Guarda sulla TV* → inserisci il codice.
-  Funziona via internet, non serve una rete comune, e resta memorizzato nei
-  cookie della WebView
-- Da quel momento il tasto "trasmetti" del passeggero manda i video sull'auto
-- L'audio esce dalle casse dell'auto attraverso Android Auto
+- Loads `youtube.com/tv` behind a smart-TV user agent, which serves the leanback
+  interface
+- The car display is narrower than a TV, so the WebView **zooms out** until the
+  page has a 1280px viewport to lay itself out in, instead of being squeezed
+- **Pair once**: on the car, Settings → *Link with TV code*; on the passenger's
+  phone, YouTube → *Watch on TV* → enter the code. It goes over the internet, so
+  no shared network is needed, and it survives restarts in the WebView's cookies
+- From then on the passenger's cast button sends videos to the car
+- Audio comes out of the car speakers through Android Auto itself
 
-> **Fuori portata:** fare da ricevitore per Netflix, Disney+ o Prime Video.
-> Quelle app parlano solo con ricevitori Chromecast certificati con DRM
-> hardware — nessuna app di terze parti può sostituirsi a loro.
+> [!NOTE]
+> **Out of reach:** acting as a receiver for Netflix, Disney+ or Prime Video.
+> Those apps only talk to certified Chromecast receivers with hardware DRM — no
+> third-party app can stand in for one.
 
 ---
 
-## Condividere un link dal secondo telefono
+## Sharing a link from a second phone
 
-Un passeggero può mandare qualsiasi link sul display dell'auto tramite la
-normale condivisione di Android.
+A passenger can send any link to the car display through Android's ordinary
+share sheet.
 
-```
-┌──────────────────┐   POST /open    ┌────────────────────┐
-│ Telefono ospite  │ ──────────────► │ Telefono dell'auto │
-│  app AA Share    │   porta 8977    │  ShareServer       │
-└──────────────────┘                 └─────────┬──────────┘
-                                               │ primo URL nel testo
-                                               ▼
-                                     Browser sul display auto
+```mermaid
+sequenceDiagram
+    participant P as Passenger's phone (AA Share)
+    participant C as Car phone (ShareServer :8977)
+    participant D as Car display
+    P->>C: POST /open — shared text
+    Note over C: first URL extracted
+    C->>D: open in the car browser
+    C-->>P: 200 OK / 400 no URL found
 ```
 
-- **AA Share** (modulo `companion/`) è un'app minima che compare nel menu di
-  condivisione e invia il testo al telefono dell'auto
-- L'indirizzo di destinazione è il **gateway DHCP** della rete: lo scenario
-  previsto è l'hotspot del telefono dell'auto
-- Lato auto, `ShareServer` è un server HTTP essenziale su socket puri, vivo
-  quanto la sessione Android Auto: estrae il primo URL dal testo ricevuto e lo
-  apre nel browser dell'auto
+- **AA Share** (the `companion/` module) is a minimal app that appears in the
+  share sheet and posts the text to the car phone
+- The destination is the network's **DHCP gateway** — the intended setup is the
+  car phone's hotspot
+- On the car side `ShareServer` is a bare-sockets HTTP server, alive for as long
+  as the Android Auto session, which pulls the first URL out of the text and
+  opens it in the car browser
 
 ---
 
-## Impostazioni
+## Settings
 
-Raggiungibili con ⚙ dal menu principale:
+Behind the ⚙ action on the main menu:
 
-| Voce | Cosa fa |
+| Setting | What it does |
 |---|---|
-| **Layout menu** | Griglia o lista |
-| **Blocco rotazione orizzontale** | Forza il telefono in orizzontale con una finestra overlay invisibile, utile durante il mirroring |
-| **Riempi schermo** | Center-crop del mirroring; nelle modalità web ritaglia il video perché copra tutto il display |
+| **Menu layout** | Grid or list |
+| **Landscape rotation lock** | Forces the phone into landscape through an invisible overlay window — useful while mirroring |
+| **Fill screen** | Center-crops the mirrored screen; in the web modes it crops the video to cover the whole display |
 
-Layout e riempi-schermo sono salvati e sopravvivono al riavvio; il blocco
-rotazione è volatile per natura, dipende dall'overlay attivo.
+Layout and fill-screen persist across restarts. The rotation lock is volatile by
+nature: it reflects whether the overlay is currently up.
 
 ---
 
-## Architettura
+## Architecture
 
 ```mermaid
 graph TD
-    Host["Android Auto host<br/>(display dell'auto)"] -->|Surface + eventi| Router[SurfaceRouter]
+    Host["Android Auto host (car display)"] -->|surface + input| Router[SurfaceRouter]
     Router --> Mirror[MirrorScreen]
-    Router --> Web["WebSink<br/>(browser · YouTube)"]
-    Mirror --> Service["MirrorService<br/>MediaProjection"]
-    Mirror --> A11y["Servizio accessibilità<br/>tap e swipe sul telefono"]
-    Web --> Display["WebDisplay<br/>VirtualDisplay + Presentation + WebView"]
+    Router --> Web["WebSink (browser, YouTube)"]
+    Mirror --> Service["MirrorService — MediaProjection"]
+    Mirror --> A11y["Accessibility service — taps and swipes"]
+    Web --> Display["WebDisplay — VirtualDisplay + Presentation + WebView"]
     Share["ShareServer :8977"] --> Display
-    Companion["AA Share<br/>(secondo telefono)"] -->|POST /open| Share
+    Companion["AA Share (second phone)"] -->|POST /open| Share
 ```
 
-Un solo `SurfaceCallback` è registrato per sessione: `SurfaceRouter` fa da
-arbitro e scambia sotto di esso la modalità che possiede la superficie, perché
-l'host non riemette `onSurfaceAvailable` quando cambia il callback.
+Exactly one `SurfaceCallback` is registered per session: `SurfaceRouter` owns it
+and swaps the active mode underneath, because the host does not re-deliver
+`onSurfaceAvailable` when the callback changes.
 
-### Moduli
+### Modules
 
-| Modulo | Contenuto |
+| Module | Contents |
 |---|---|
-| `app/` | L'app principale, installata sul telefono collegato all'auto |
-| `companion/` | **AA Share**, per il telefono del passeggero |
+| `app/` | The main app, installed on the phone that plugs into the car |
+| `companion/` | **AA Share**, for the passenger's phone |
 
-### Package
+### Packages
 
-| Package | Responsabilità |
+| Package | Responsibility |
 |---|---|
-| `core/` | Logica pura e testabile: calcolo aspect-fit/fill, mappatura dei tocchi, gesto di scorrimento, viewport web, risoluzione URL, stato del mirroring |
-| `mirror/` | Servizio in foreground, `MediaProjection`, astrazione `FrameSource`, resa a schermo pieno |
-| `car/` | Le schermate della Car App Library e l'arbitro della Surface |
-| `browser/` | `WebDisplay`: WebView su display virtuale, con tocco, scorrimento e tasto indietro |
-| `input/` | Accessibilità (tap, swipe, indietro, home), tasti media, blocco rotazione, risparmio luminosità |
-| `share/` | Server HTTP di condivisione e parsing del testo ricevuto |
-| `setup/` | Activity di configurazione sul telefono, preferiti, preferenze |
+| `core/` | Pure, testable logic: aspect fit/fill maths, touch mapping, scroll gesture path, web viewport, URL resolution, mirror state reducer |
+| `mirror/` | Foreground service, `MediaProjection`, the `FrameSource` abstraction, fill rendering |
+| `car/` | Car App Library screens and the surface arbiter |
+| `browser/` | `WebDisplay`: a WebView on a virtual display, with touch, scrolling and back |
+| `input/` | Accessibility (tap, swipe, back, home), media keys, rotation lock, brightness saver |
+| `share/` | The share HTTP server and parsing of the received text |
+| `setup/` | Phone-side setup activity, bookmarks, preferences |
 
-### Dettagli che vale la pena conoscere
+### Three things worth knowing
 
-**Lo scorrimento è un dito, non un `scrollBy`.** L'host riporta lo scorrimento
-come una raffica di piccole distanze. Applicarle con `WebView.scrollBy()` muove
-soltanto il documento radice, che le pagine moderne non scorrono mai: il
-contenuto sta in contenitori con overflow interno. AA Suite le ripiega invece
-in **un unico trascinamento reale** — un `ACTION_DOWN` al centro, una scia di
-`ACTION_MOVE`, e il dito si stacca dopo 140 ms di inattività — così scorre
-qualunque contenitore si trovi sotto.
+**Scrolling is a finger, not a `scrollBy`.** The host reports scrolling as a
+stream of small distances. Replaying each one through `WebView.scrollBy()` moves
+only the root document, which a modern page never scrolls — its content sits in
+containers with their own overflow. AA Suite folds them into **one real drag**
+instead: `ACTION_DOWN` at the centre, a trail of `ACTION_MOVE`, and the finger
+lifts 140 ms after the last event. That scrolls whatever container is under it.
 
-**Il display virtuale non può essere più grande della Surface.** L'host disegna
-il buffer pixel per pixel: un `VirtualDisplay` più grande della superficie
-produce solo un ritaglio ingrandito. Per dare a una pagina TV il viewport largo
-che si aspetta si agisce sullo zoom della WebView, non sulla risoluzione del
-display.
+**The virtual display cannot outgrow the surface.** The host paints the buffer
+pixel for pixel, so a `VirtualDisplay` larger than the surface produces a
+magnified crop, not more room. To give a TV page the wide viewport it expects you
+change the WebView's zoom, not the display's resolution.
 
-**Il tasto indietro di una TV non è la cronologia.** L'interfaccia TV di YouTube
-gestisce la propria navigazione e lascia vuota la history della WebView. Il
-ritorno indietro le arriva come evento `keydown` con i codici del tasto back dei
-telecomandi (Escape, webOS, Tizen), iniettato nella pagina via JavaScript: un
-key event nativo richiederebbe che la WebView abbia il focus, cosa che dentro
-una `Presentation` non accade.
+**A TV's back button is not the browser history.** YouTube's TV interface routes
+navigation itself and leaves the WebView history empty, so `goBack()` has nowhere
+to go. Back reaches it as a `keydown` carrying the remote back-key codes
+(Escape, webOS, Tizen), injected through JavaScript — a native key event would
+need the WebView to hold the focus, which it never does inside a `Presentation`.
 
 ---
 
-## Requisiti
+## Requirements
 
-- Telefono Android 8+ (`minSdk 26`), consigliato 10+
-- App **Android Auto** installata sul telefono
-- Auto o unità principale con Android Auto via USB — sviluppata e provata su
-  Nissan Qashqai J12 e su Desktop Head Unit
+- Android 8+ phone (`minSdk 26`), 10+ recommended
+- The **Android Auto** app installed on the phone
+- A car or head unit with Android Auto over USB — developed and tested against a
+  Nissan Qashqai J12 and the Desktop Head Unit
 
-## Build
+## Building
 
 ```bash
-./gradlew installDebug           # app principale, telefono in debug USB
-./gradlew :companion:installDebug # AA Share, sul telefono del passeggero
-./gradlew test                   # test unitari
+./gradlew installDebug             # main app, phone in USB debugging
+./gradlew :companion:installDebug  # AA Share, on the passenger's phone
+./gradlew test                     # unit tests
+./gradlew bundleRelease            # signed AAB for Play Console
 ```
 
-La build di release richiede `keystore/keystore.properties` e il relativo
-keystore, tenuti fuori dal controllo di versione: senza quei file la
-configurazione di firma viene semplicemente saltata.
+Release signing reads `keystore/keystore.properties` and its keystore, both kept
+out of version control; without them the signing config is simply skipped and
+debug builds still work.
 
-## Configurazione sul telefono (una tantum)
+## One-time phone setup
 
-1. App **Android Auto** → Impostazioni → tocca 10 volte su *Versione* per
-   sbloccare la modalità sviluppatore
-2. Menu ⋮ → **Impostazioni sviluppatore** → attiva **Fonti sconosciute**
-   (necessario per le build installate via adb)
-3. Impostazioni → **Personalizza launcher** → attiva **AA Suite**
-4. Apri AA Suite sul telefono e concedi: cattura schermo, servizio di
-   accessibilità, "Mostra sopra altre app"
+1. **Android Auto** app → Settings → tap *Version* ten times to unlock developer
+   mode
+2. ⋮ → **Developer settings** → enable **Unknown sources** (required for builds
+   installed over adb)
+3. Settings → **Customise launcher** → enable **AA Suite**
+4. Open AA Suite on the phone and grant: screen capture, the accessibility
+   service, and "Display over other apps"
 
-## Provare senza auto (Desktop Head Unit)
+## Running without a car
 
 ```bash
-# 1. Android Studio → SDK Manager → SDK Tools → Android Auto Desktop Head Unit
-# 2. Sul telefono: Android Auto → Impostazioni sviluppatore → Avvia server unità principale
+# Android Studio → SDK Manager → SDK Tools → Android Auto Desktop Head Unit
+# On the phone: Android Auto → Developer settings → Start head unit server
 adb forward tcp:5277 tcp:5277
 "$LOCALAPPDATA/Android/Sdk/extras/google/auto/desktop-head-unit.exe"
 ```
 
-L'ordine conta: il server sul telefono deve essere già in ascolto quando il DHU
-parte, altrimenti resta fermo su *Waiting for phone*.
+Order matters: the phone's server must already be listening when the DHU starts,
+or it sits on *Waiting for phone*. A `~/.android/headunit.ini` pins the emulated
+display's resolution, which is worth setting before taking screenshots.
 
-## Distribuzione
+## Distribution
 
-Le app Android Auto basate su template **non compaiono sulle auto reali** se
-non sono state installate dal Play Store, anche con le fonti sconosciute
-attive. Per provare in macchina serve quindi caricare l'AAB nel canale **Test
-interno** di Play Console e installare da lì.
+Template-based Android Auto apps **do not appear on real cars** unless they were
+installed from the Play Store, even with unknown sources enabled. Testing in an
+actual car therefore means uploading the AAB to Play Console's **internal
+testing** track and installing from there.
+
+## Testing
+
+Unit tests cover the pure logic in `core/`, with no Android dependencies: fit and
+fill geometry, car-to-phone touch mapping, the scroll gesture path, web viewport
+zoom, the mirror state reducer, shared-URL parsing, bookmark encoding, and the
+share server's HTTP handling.
 
 ```bash
-./gradlew bundleRelease   # app/build/outputs/bundle/release/app-release.aab
+./gradlew test
 ```
 
-## Test
+## Known limitations
 
-I test unitari coprono la logica pura in `core/`, senza dipendenze Android:
-calcolo delle proporzioni in fit e fill, mappatura dei tocchi dall'auto al
-telefono, percorso del gesto di scorrimento, zoom del viewport web, riduttore
-di stato del mirroring, parsing degli URL condivisi, codifica dei preferiti,
-protocollo del server di condivisione.
+- **YouTube Cast, back button:** it takes two presses to leave a video — the
+  cause has not been isolated yet
+- **16:9 video on a 2:1 display:** side bars remain unless *fill screen* is on,
+  which crops the picture in exchange
+- **Receiving casts from Netflix, Disney+, Prime Video:** impossible by licensing
+  and DRM, not a bug waiting to be fixed
 
-## Limiti noti
+## License
 
-- **YouTube Cast, tasto indietro:** serve premerlo due volte per uscire da un
-  video — la causa non è ancora isolata
-- **Video 16:9 su display 2:1:** restano bande laterali, a meno di attivare
-  *Riempi schermo*, che in cambio ritaglia il video
-- **Ricezione cast di Netflix, Disney+, Prime Video:** impossibile per vincoli
-  di licenza e DRM, non è un difetto risolvibile
+[MIT](LICENSE) © 2026 iAlias
