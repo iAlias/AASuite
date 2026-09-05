@@ -54,7 +54,13 @@ class LocalScreenSource(
         lastTarget = target
         fillRenderer?.release()
         fillRenderer = null
-        if (MirrorSettings.fillScreen && Build.VERSION.SDK_INT >= 29) {
+        // Fill drives the car surface through hwui, which the surface only
+        // allows while nothing has claimed it for the CPU. When something
+        // has, fall back to fit: a refused claim is a black screen at worst,
+        // an honoured one would abort the process on the first frame.
+        val fill = MirrorSettings.fillScreen && Build.VERSION.SDK_INT >= 29 &&
+            SurfaceMode.useHardware(target.surface, true)
+        if (fill) {
             val (phoneWidth, phoneHeight) = PhoneDisplay.currentSize(context)
             lastPhoneSize = phoneWidth to phoneHeight
             val renderer = FillRenderer(target, phoneWidth, phoneHeight)
