@@ -14,14 +14,14 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.viami.aamirror"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.viami.aamirror"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 7
-        versionName = "0.7"
+        targetSdk = 36
+        versionCode = 8
+        versionName = "0.8"
     }
 
     signingConfigs {
