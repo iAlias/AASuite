@@ -52,7 +52,8 @@ class LocalScreenSource(
 
     override fun attach(target: SurfaceTarget) {
         lastTarget = target
-        fillRenderer?.release()
+        // fillRenderer is only ever created below, gated on SDK_INT >= 29.
+        if (Build.VERSION.SDK_INT >= 29) fillRenderer?.release()
         fillRenderer = null
         // Fill drives the car surface through hwui, which the surface only
         // allows while nothing has claimed it for the CPU. When something
@@ -91,7 +92,8 @@ class LocalScreenSource(
 
     override fun detach() {
         virtualDisplay?.surface = null
-        fillRenderer?.release()
+        // fillRenderer is only ever created on SDK_INT >= 29 (see attach()).
+        if (Build.VERSION.SDK_INT >= 29) fillRenderer?.release()
         fillRenderer = null
     }
 
