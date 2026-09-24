@@ -34,7 +34,7 @@ class YouTubeScreen(carContext: CarContext) : Screen(carContext), DefaultLifecyc
             .addAction(action(R.drawable.ic_back) { YouTubeDisplay.goBack() })
             .addAction(action(R.drawable.ic_reload) { YouTubeDisplay.reload() })
             .build()
-        return NavigationTemplate.Builder().setActionStrip(strip).build()
+        return NavigationTemplate.Builder().setActionStrip(strip).withPan().build()
     }
 
     private fun action(iconRes: Int, onClick: () -> Unit): Action =
