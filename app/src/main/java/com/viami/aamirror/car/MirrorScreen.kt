@@ -79,7 +79,7 @@ class MirrorScreen(carContext: CarContext) : Screen(carContext), DefaultLifecycl
                 requireAccessibility { MirrorAccessibilityService.pressHome() }
             })
             .build()
-        return NavigationTemplate.Builder().setActionStrip(strip).build()
+        return NavigationTemplate.Builder().setActionStrip(strip).withPan().build()
     }
 
     private fun ensureProjection() {

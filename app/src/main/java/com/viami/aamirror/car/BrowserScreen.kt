@@ -31,7 +31,7 @@ class BrowserScreen(carContext: CarContext) : Screen(carContext), DefaultLifecyc
             .addAction(action(R.drawable.ic_reload) { BrowserDisplay.reload() })
             .addAction(action(R.drawable.ic_search) { openSearch() })
             .build()
-        return NavigationTemplate.Builder().setActionStrip(strip).build()
+        return NavigationTemplate.Builder().setActionStrip(strip).withPan().build()
     }
 
     private fun openSearch() {
