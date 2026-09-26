@@ -15,7 +15,9 @@ import android.view.Surface
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.viami.aamirror.core.ArrowKey
 import com.viami.aamirror.core.GesturePoint
+import com.viami.aamirror.core.KeyScroll
 import com.viami.aamirror.core.MirrorSettings
 import com.viami.aamirror.core.ScrollGesture
 import com.viami.aamirror.core.UrlResolver
@@ -33,11 +35,14 @@ val BrowserDisplay: WebDisplay = WebDisplay(homeUrl = UrlResolver.HOME)
  * The YouTube "TV" mode, cast target for the second phone. The TV interface
  * is built for a 1280-wide screen; the car surface is half that, so the
  * WebView zooms out until the page has that much room to lay itself out in.
+ * Its leanback UI moves focus with a remote and ignores touch drags, so car
+ * scrolling is turned into arrow-key presses.
  */
 val YouTubeDisplay: WebDisplay = WebDisplay(
     homeUrl = "https://www.youtube.com/tv",
     userAgent = TV_USER_AGENT,
     logicalWidth = 1280,
+    scrollWithKeys = true,
 )
 
 /**
@@ -49,6 +54,7 @@ class WebDisplay(
     private val homeUrl: String,
     private val userAgent: String? = null,
     private val logicalWidth: Int? = null,
+    private val scrollWithKeys: Boolean = false,
 ) {
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -64,6 +70,10 @@ class WebDisplay(
     private var fingerPoint = GesturePoint(0f, 0f)
     private var gestureDownTime = 0L
     private val liftFinger = Runnable { finishGesture() }
+
+    /** Folds car scroll events into arrow keys when [scrollWithKeys] is set. */
+    private val keyScroll = KeyScroll()
+    private val resetKeyScroll = Runnable { keyScroll.reset() }
 
     val isAttached: Boolean
         get() = presentation != null
@@ -182,6 +192,10 @@ class WebDisplay(
      * page scroll whichever container is under the finger.
      */
     fun scroll(distanceX: Float, distanceY: Float) {
+        if (scrollWithKeys) {
+            pressArrowKeys(distanceX, distanceY)
+            return
+        }
         mainHandler.post {
             val target = decorView() ?: return@post
             if (!gestureActive) beginGesture(target)
@@ -198,6 +212,16 @@ class WebDisplay(
             } else {
                 mainHandler.postDelayed(liftFinger, GESTURE_IDLE_MS)
             }
+        }
+    }
+
+    private fun pressArrowKeys(distanceX: Float, distanceY: Float) {
+        mainHandler.post {
+            val web = webView ?: return@post
+            mainHandler.removeCallbacks(resetKeyScroll)
+            mainHandler.postDelayed(resetKeyScroll, GESTURE_IDLE_MS)
+            val keys = keyScroll.advance(distanceX, distanceY)
+            if (keys.isNotEmpty()) web.evaluateJavascript(arrowKeysJs(keys), null)
         }
     }
 
@@ -219,6 +243,8 @@ class WebDisplay(
     private fun cancelGesture() {
         mainHandler.removeCallbacks(liftFinger)
         gestureActive = false
+        mainHandler.removeCallbacks(resetKeyScroll)
+        keyScroll.reset()
     }
 
     private fun decorView(): View? = presentation?.window?.decorView
@@ -273,6 +299,20 @@ class WebDisplay(
               return before + ' -> ' + location.hash;
             })();
         """.trimIndent()
+
+        /**
+         * Arrow-key presses dispatched to the focused element, so they reach
+         * the page's own key handlers the way a remote's d-pad would.
+         */
+        fun arrowKeysJs(keys: List<ArrowKey>): String {
+            val list = keys.joinToString(",") { "['${it.key}',${it.keyCode}]" }
+            return "(function(){var t=document.activeElement||document.body;" +
+                "[$list].forEach(function(k){['keydown','keyup'].forEach(function(type){" +
+                "var e=new KeyboardEvent(type,{bubbles:true,cancelable:true,key:k[0],code:k[0]});" +
+                "Object.defineProperty(e,'keyCode',{get:function(){return k[1];}});" +
+                "Object.defineProperty(e,'which',{get:function(){return k[1];}});" +
+                "t.dispatchEvent(e);});});})();"
+        }
 
         /** How long after the last scroll event the finger lifts. */
         const val GESTURE_IDLE_MS = 140L
